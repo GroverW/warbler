@@ -5,7 +5,7 @@ from flask_debugtoolbar import DebugToolbarExtension
 from sqlalchemy.exc import IntegrityError
 
 from forms import UserAddForm, LoginForm, MessageForm, UserEditForm
-from models import db, connect_db, User, Message
+from models import db, connect_db, User, Message, Likes
 
 CURR_USER_KEY = "curr_user"
 
@@ -222,7 +222,6 @@ def profile():
         flash("Access unauthorized.", "danger")
         return redirect("/")
 
-
     form = UserEditForm(obj=g.user)
 
     if form.validate_on_submit():
@@ -310,6 +309,39 @@ def messages_destroy(message_id):
     db.session.commit()
 
     return redirect(f"/users/{g.user.id}")
+
+
+@app.route('/likes/<int:msg_id>/update', methods=["POST"])
+def likes_add(msg_id):
+    if not g.user:
+        flash("Access unauthorized.", "danger")
+        return redirect("/")
+
+    existing_like = Likes.query.filter(
+                                    Likes.user_id == g.user.id,
+                                    Likes.message_id == msg_id).first()
+
+    if existing_like:
+        db.session.delete(existing_like)
+    else:
+        like = Likes(user_id=g.user.id, message_id=msg_id)
+        db.session.add(like)
+    
+    db.session.commit()
+
+    return redirect("/")
+
+
+@app.route('/users/<int:user_id>/likes')
+def users_likes(user_id):
+    """Show list of likes for this user."""
+
+    if not g.user:
+        flash("Access unauthorized.", "danger")
+        return redirect("/")
+
+    user = User.query.get_or_404(user_id)
+    return render_template('users/likes.html', user=user)
 
 
 ##############################################################################
