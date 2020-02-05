@@ -110,7 +110,8 @@ class User(db.Model):
         Hashes password and adds user to system.
         """
 
-        hashed_pwd = bcrypt.generate_password_hash(password).decode('UTF-8')
+        hashed_pwd = bcrypt.generate_password_hash(password).decode('utf8')
+        # hashed_pwd = bcrypt.generate_password_hash(password).decode('UTF-8')
 
         user = User(
             username=username,
@@ -119,7 +120,7 @@ class User(db.Model):
             image_url=image_url,
         )
 
-        db.session.add(user)
+        # db.session.add(user)
         return user
 
     @classmethod
