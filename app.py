@@ -218,7 +218,7 @@ def stop_following(follow_id):
 def profile():
     """Update profile for current user."""
 
-    if request.method == "POST" and not g.user:
+    if not g.user:
         flash("Access unauthorized.", "danger")
         return redirect("/")
 
@@ -327,6 +327,7 @@ def homepage():
     if g.user:
         
         following_user_ids = [user.id for user in g.user.following] 
+        following_user_ids.append(g.user.id)
         messages = (Message
                     .query
                     .filter(Message.user_id.in_(following_user_ids))
