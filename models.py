@@ -27,7 +27,7 @@ class Follows(db.Model):
     )
 
 
-class Likes(db.model):
+class Likes(db.Model):
     """ Connection of likes messages between users and messages """
 
     __tablename__ = 'likes'
