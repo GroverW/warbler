@@ -299,8 +299,8 @@ def messages_show(message_id):
 @app.route('/messages/<int:message_id>/delete', methods=["POST"])
 def messages_destroy(message_id):
     """Delete a message."""
-
-    if not g.user:
+    message =  Message.query.get_or_404(message_id)
+    if not g.user or g.user.id != message.user_id:
         flash("Access unauthorized.", "danger")
         return redirect("/")
 

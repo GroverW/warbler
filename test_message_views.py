@@ -1,74 +1,115 @@
-"""Message View tests."""
-
-# run these tests like:
-#
-#    FLASK_ENV=production python -m unittest test_message_views.py
-
+""" Message model tests"""
 
 import os
 from unittest import TestCase
 
-from models import db, connect_db, Message, User
-
-# BEFORE we import our app, let's set an environmental variable
-# to use a different database for tests (we need to do this
-# before we import our app, since that will have already
-# connected to the database
+from models import db, User, Message, Follows
 
 os.environ['DATABASE_URL'] = "postgresql:///warbler-test"
 
 
 # Now we can import app
 
-from app import app, CURR_USER_KEY
-
-# Create our tables (we do this here, so we only create the tables
-# once for all tests --- in each test, we'll delete the data
-# and create fresh new clean test data
-
-db.create_all()
-
-# Don't have WTForms use CSRF at all, since it's a pain to test
-
+from app import app, session, CURR_USER_KEY
+app.config["DEBUG_TB_HOSTS"] = ["dont-show-debug-toolbar"]
 app.config['WTF_CSRF_ENABLED'] = False
 
 
-class MessageViewTestCase(TestCase):
-    """Test views for messages."""
+class MessageModelTestCase(TestCase):
+    """ Test for message model"""
 
     def setUp(self):
         """Create test client, add sample data."""
-
+        app.config['SECRET_KEY'] = 'secret'
+        db.create_all()
         User.query.delete()
         Message.query.delete()
+        Follows.query.delete()
+
+
+        self.u1 = User.signup(
+            email="test@test.com",
+            username="testuser",
+            password="HASHED_PASSWORD",
+            image_url=""
+        )
+
+        self.u2 = User.signup(
+            email="test2@test.com",
+            username="testuser2",
+            password="HASHED_PASSWORD",
+            image_url=""
+        )
+
+        db.session.add_all([self.u1, self.u2])
+        db.session.commit()
+
+        self.u1 = User.query.filter_by(username=self.u1.username).first()
+        self.u2 = User.query.filter_by(username=self.u2.username).first()
+
+        message1 = Message(text="test message number one", user_id = self.u1.id)
+        message2 = Message(text="test message number two", user_id = self.u2.id)
+       
+        db.session.add_all([message1, message2])
+        db.session.commit()
+
 
         self.client = app.test_client()
 
-        self.testuser = User.signup(username="testuser",
-                                    email="test@test.com",
-                                    password="testuser",
-                                    image_url=None)
+    def tearDown(self):
+        db.session.remove()
+        db.drop_all()
 
-        db.session.add(self.testuser)
-        db.session.commit()
-
-    def test_add_message(self):
-        """Can use add a message?"""
-
-        # Since we need to change the session to mimic logging in,
-        # we need to use the changing-session trick:
-
+    
+    def test_new_message(self):
+        """ Can a user make a new message """
         with self.client as c:
             with c.session_transaction() as sess:
-                sess[CURR_USER_KEY] = self.testuser.id
+                sess[CURR_USER_KEY] = self.u1.id
+        
+            resp = self.client.post("/messages/new", data={
+                                                 "text":"This is a new test message"}
+                                                  , follow_redirects=True)
+            html = resp.get_data(as_text=True)
 
-            # Now, that session setting is saved, so we can have
-            # the rest of ours test
+            self.assertEqual(resp.status_code, 200)
+            self.assertIn("<p>This is a new test message</p>", html)
+            self.assertIn("<p>test message number one</p>", html)
 
-            resp = c.post("/messages/new", data={"text": "Hello"})
 
-            # Make sure it redirects
-            self.assertEqual(resp.status_code, 302)
+    def test_new_blank_message(self):
+        with self.client as c:
+            with c.session_transaction() as sess:
+                sess[CURR_USER_KEY] = self.u1.id
+        
+            resp = self.client.post("/messages/new", data={
+                                                 "text":""}
+                                                  ,follow_redirects=True)
+            html = resp.get_data(as_text=True)
+            self.assertEqual(resp.status_code, 200)
+            self.assertIn('This field is required.', html)
+    
 
-            msg = Message.query.one()
-            self.assertEqual(msg.text, "Hello")
+    def test_delete_message(self):
+        with self.client as c:
+            with c.session_transaction() as sess:
+                sess[CURR_USER_KEY] = self.u1.id
+        
+            message1 = Message.query.filter(Message.text=="test message number one").first()
+            resp = self.client.post(f"/messages/{message1.id}/delete", follow_redirects=True)
+            html = resp.get_data(as_text=True)
+            self.assertEqual(resp.status_code, 200)
+            self.assertNotIn("<p>test message number one</p>", html)
+
+
+    def test_delete_other_user_message(self):
+        with self.client as c:
+            with c.session_transaction() as sess:
+                sess[CURR_USER_KEY] = self.u1.id
+        
+            message2 = Message.query.filter(Message.text=="test message number two").first()
+            
+            resp = self.client.post(f"/messages/{message2.id}/delete", follow_redirects=True)
+            html = resp.get_data(as_text=True)
+            self.assertEqual(resp.status_code, 200)
+            self.assertIn("Access unauthorized", html)
