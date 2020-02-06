@@ -299,6 +299,10 @@ nav + .container {
   border: none;
 }
 
+.likes i {
+  color: red;
+}
+
 #sidebar-username {
   margin-top: 30px;
   font-size: 21px;
