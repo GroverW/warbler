@@ -187,7 +187,7 @@ def users_followers(user_id):
 @app.route('/users/follow/<int:follow_id>', methods=['POST'])
 def add_follow(follow_id):
     """Add a follow for the currently-logged-in user."""
-
+    # print("/////////////////////////g.user.id",g.user)
     if not g.user:
         flash("Access unauthorized.", "danger")
         return redirect("/")

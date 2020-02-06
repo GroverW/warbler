@@ -49,6 +49,7 @@ class MessageViewTestCase(TestCase):
                                     password="testuser",
                                     image_url=None)
 
+        db.session.add(self.testuser)
         db.session.commit()
 
     def test_add_message(self):
