@@ -138,7 +138,7 @@ def list_users():
     if not search:
         users = User.query.all()
     else:
-        users = User.query.filter(User.username.like(f"%{search}%")).all()
+        users = User.query.filter(User.username.like(f"%{search}%"),User.id != g.user.id).all()
 
     return render_template('users/index.html', users=users)
 
@@ -187,7 +187,7 @@ def users_followers(user_id):
 @app.route('/users/follow/<int:follow_id>', methods=['POST'])
 def add_follow(follow_id):
     """Add a follow for the currently-logged-in user."""
-    if not g.user:
+    if not g.user or g.user.id == follow_id:
         flash("Access unauthorized.", "danger")
         return redirect("/")
 

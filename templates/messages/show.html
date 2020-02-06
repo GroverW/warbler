@@ -20,15 +20,14 @@
                     <button class="btn btn-outline-danger">Delete</button>
                   </form>
                 {% elif g.user.is_following(message.user) %}
-                  <form method="POST"
-                        action="/users/stop-following/{{ message.user.id }}">
-                    <button class="btn btn-primary">Unfollow</button>
-                  </form>
+                <a id="{{ message.user.id }}" class="btn btn-primary btn-sm stop-following">Unfollow</a>
+                
                 {% else %}
-                  <form method="POST" action="/users/follow/{{ message.user.id }}">
-                    <button class="btn btn-outline-primary btn-sm">Follow</button>
-                  </form>
+
+                <a id="{{ message.user.id }}" class="btn btn-outline-primary start-following">Follow</a>
+                
                 {% endif %}
+
               {% endif %}
             </div>
             <p class="single-message">{{ message.text }}</p>

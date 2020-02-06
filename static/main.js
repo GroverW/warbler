@@ -1,5 +1,5 @@
 $(function() {
-  $('.card-contents').on('click', '.stop-following', async function(e) {
+  $('body').on('click', '.stop-following', async function(e) {
     e.preventDefault()
 
     let response = await axios.post(`/users/stop-following/${e.target.id}`)
@@ -11,7 +11,7 @@ $(function() {
 
   })
 
-  $('.card-contents').on('click', '.start-following', async function(e) {
+  $('body').on('click', '.start-following', async function(e) {
     e.preventDefault()
 
     let response = await axios.post(`/users/follow/${e.target.id}`)
