@@ -5,7 +5,7 @@
   {% else %}
     <div class="row justify-content-end">
       <div class="col-sm-9">
-        <div class="row">
+        <div class="row follow-wrapper">
 
           {% for user in users %}
 
@@ -23,9 +23,9 @@
 
                     {% if g.user %}
                       {% if g.user.is_following(user) %}
-                          <a id="{{ user.id }}" class="btn btn-primary btn-sm stop-following">Unfollow</a>
+                          <a id="{{ user.id }}" class="follow-btn btn btn-primary btn-sm stop-following text-white">Unfollow</a>
                       {% else %}
-                          <a id="{{ user.id }}" class="btn btn-outline-primary start-following">Follow</a>
+                          <a id="{{ user.id }}" class="follow-btn btn btn-outline-primary start-following text-primary">Follow</a>
                       {% endif %}
                     {% endif %}
 

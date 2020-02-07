@@ -262,11 +262,14 @@ nav + .container {
   padding-top: 3px;
 }
 
-.follow-btn {
+a.follow-btn {
   margin: 5px 5px 0 0;
+  padding: 6px 0px;
   width: 89px;
-  height: 30px;
-  line-height: 20px;
+  height: 30px; 
+  line-height: 16px;
+  font-size: 13px;
+
 }
 
 #messages {

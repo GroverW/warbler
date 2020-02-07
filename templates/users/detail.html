@@ -35,20 +35,20 @@
               <a href="/users/{{ user.id }}/likes">{{ user.likes | length }}</a>
             </h4>
           </li>
-          <div class="ml-auto">
+          <div class="ml-auto follow-wrapper">
             {% if g.user.id == user.id %}
             <a href="/users/profile" class="btn btn-outline-secondary">Edit Profile</a>
             <form method="POST" action="/users/delete" class="form-inline">
               <button class="btn btn-outline-danger ml-2">Delete Profile</button>
             </form>
             {% elif g.user %}
-            <div class='card-contents'>
+            
               {% if g.user.is_following(user) %}
               <a id="{{ user.id }}" class="btn btn-primary btn-sm stop-following text-white">Unfollow</a>
               {% else %}
               <a id="{{ user.id }}" class="btn btn-outline-primary start-following text-primary">Follow</a>
               {% endif %}
-            </div>
+            
             {% endif %}
             
           </div>

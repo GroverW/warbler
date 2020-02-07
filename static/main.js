@@ -1,5 +1,5 @@
 $(function () {
-  $('.card-contents').on('click', '.stop-following, .start-following', async function (e) {
+  $('.follow-wrapper').on('click', '.stop-following, .start-following', async function (e) {
     e.preventDefault()
     $link = $(e.target)
 
