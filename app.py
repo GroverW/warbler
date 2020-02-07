@@ -5,7 +5,7 @@ from flask_debugtoolbar import DebugToolbarExtension
 from sqlalchemy.exc import IntegrityError
 
 from forms import UserAddForm, LoginForm, MessageForm, UserEditForm
-from models import db, connect_db, User, Message, Likes
+from models import db, connect_db, User, Message, Likes, Blocks
 
 CURR_USER_KEY = "curr_user"
 
@@ -134,11 +134,17 @@ def list_users():
     """
 
     search = request.args.get('q')
+    
+    users_blocking = [block.user_blocking_id for block in Blocks.query.all() if block.user_being_blocked_id == g.user.id]
 
     if not search:
-        users = User.query.all()
+        users = User.query.filter(User.id.notin_(users_blocking)).all()
     else:
-        users = User.query.filter(User.username.like(f"%{search}%"),User.id != g.user.id).all()
+        users = (User.query.filter(
+                                  User.username.like(f"%{search}%"),
+                                  User.id != g.user.id,
+                                  User.id.notin_(users_blocking))
+                                  .all())
 
     return render_template('users/index.html', users=users)
 
@@ -146,8 +152,13 @@ def list_users():
 @app.route('/users/<int:user_id>')
 def users_show(user_id):
     """Show user profile."""
-
+    
     user = User.query.get_or_404(user_id)
+
+    if (user.is_blocking(g.user)):
+        flash("User can't be found", "danger")
+        return redirect("/")
+
 
     # snagging messages in order from the database;
     # user.messages won't be in order by default
@@ -402,12 +413,14 @@ def homepage():
     """
 
     if g.user:
-        
+        users_blocking = [block.user_blocking_id for block in Blocks.query.all() if block.user_being_blocked_id == g.user.id]
+
         following_user_ids = [user.id for user in g.user.following] 
         following_user_ids.append(g.user.id)
         messages = (Message
                     .query
-                    .filter(Message.user_id.in_(following_user_ids))
+                    .filter(Message.user_id.in_(following_user_ids),
+                            Message.user_id.notin_(users_blocking))
                     .order_by(Message.timestamp.desc())
                     .limit(100)
                     .all())
