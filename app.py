@@ -181,7 +181,7 @@ def users_followers(user_id):
         return redirect("/")
 
     user = User.query.get_or_404(user_id)
-    return render_template('users/followers.html', user=user)
+    return render_template('users/blocked_users.html', user=user)
 
 
 @app.route('/users/follow/<int:follow_id>', methods=['POST'])
@@ -211,6 +211,32 @@ def stop_following(follow_id):
     db.session.commit()
 
     return redirect(f"/users/{g.user.id}/following")
+
+
+@app.route('/users/<int:user_id>/blocked-users')
+def block_user(user_id):
+    """ Block/unblock users from following/commenting/liking another user's posts"""
+
+    if not g.user:
+        flash("Access unauthorized.", "danger")
+        return redirect("/")
+
+    user = User.query.get_or_404(user_id)
+    return render_template('users/blocked-users.html', user=user)
+
+
+@app.route('/users/block/<int:block_id>', methods=['POST'])
+def add_block(block_id):
+    """Add a follow for the currently-logged-in user."""
+    if not g.user or g.user.id == block_id:
+        flash("Access unauthorized.", "danger")
+        return redirect("/")
+
+    blocked_user = User.query.get_or_404(block_id)
+    g.user.blocked_users.append(blocked_user)
+    db.session.commit()
+
+    return redirect(f"/users/{g.user.id}/blocked-users")
 
 
 @app.route('/users/profile', methods=["GET", "POST"])

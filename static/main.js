@@ -23,4 +23,19 @@ $(function () {
       $(e.target).closest("a").toggleClass('likes not-likes')
     }
   });
+
+  $('.follow-wrapper').on('click', '.stop-blocking, .start-blocking', async function (e) {
+    e.preventDefault()
+    $link = $(e.target)
+
+    let route = $link.hasClass('stop-blocking') ? 'unblock' : 'block';
+    let blockText = $link.hasClass('stop-blocking') ? 'Block' : 'Unblock';
+    console.log(`/users/${route}/${e.target.id}`)
+    let response = await axios.post(`/users/${route}/${e.target.id}`)
+
+    if (response.status === 200) {
+      $link.toggleClass('start-blocking stop-blocking btn-danger btn-outline-danger text-danger text-white')
+      $link.text(blockText)
+    }
+  })
 });

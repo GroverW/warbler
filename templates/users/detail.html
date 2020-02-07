@@ -35,6 +35,14 @@
               <a href="/users/{{ user.id }}/likes">{{ user.likes | length }}</a>
             </h4>
           </li>
+          {% if g.user.id == user.id %}
+          <li class="stat">
+            <p class="small">Blocked</p>
+            <h4>
+              <a href="/users/{{ user.id }}/blocked-users">{{ user.blocked_users | length }}</a>
+            </h4>
+          </li>
+          {% endif %}
           <div class="ml-auto follow-wrapper">
             {% if g.user.id == user.id %}
             <a href="/users/profile" class="btn btn-outline-secondary">Edit Profile</a>
@@ -49,7 +57,17 @@
               <a id="{{ user.id }}" class="btn btn-outline-primary start-following text-primary">Follow</a>
               {% endif %}
             
+              &nbsp;
+
+              {% if g.user.is_blocking(user) %}
+              <a id="{{ user.id }}" class="btn btn-danger btn-sm stop-blocking text-white">Unblock</a>
+              {% else %}
+              <a id="{{ user.id }}" class="btn btn-outline-danger start-blocking text-danger">Block</a>
+              {% endif %}
+
             {% endif %}
+
+            
             
           </div>
         </ul>

@@ -45,6 +45,25 @@ class Likes(db.Model):
     )
 
 
+class Blocks(db.Model):
+    """ Connection of users who have blocked each other and have been blocked """
+
+    __tablename__ = 'blocks'
+
+    user_being_blocked_id = db.Column(
+        db.Integer,
+        db.ForeignKey('users.id', ondelete="cascade"),
+        primary_key=True,
+    )
+
+    user_blocking_id = db.Column(
+        db.Integer,
+        db.ForeignKey('users.id', ondelete="cascade"),
+        primary_key=True,
+    )
+
+
+
 class User(db.Model):
     """User in the system."""
 
@@ -106,6 +125,13 @@ class User(db.Model):
         secondaryjoin=(Follows.user_being_followed_id == id)
     )
 
+    blocked_users = db.relationship(
+        "User",
+        secondary="blocks",
+        primaryjoin=(Blocks.user_blocking_id == id),
+        secondaryjoin=(Blocks.user_being_blocked_id == id)
+    )
+
     likes = db.relationship(
         "Message",
         secondary="likes",
@@ -125,6 +151,11 @@ class User(db.Model):
         """Is this user following `other_use`?"""
 
         found_user_list = [user for user in self.following if user == other_user]
+        return len(found_user_list) == 1
+    
+    def is_blocking(self, other_user):
+        """ Is this user blocking other_user? """
+        found_user_list = [user for user in self.blocked_users if user == other_user]
         return len(found_user_list) == 1
 
     @classmethod
