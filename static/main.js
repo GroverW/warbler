@@ -15,9 +15,8 @@ $(function () {
   })
 
 
-  $('body').on('click', '.like-btn', async function (e) {
+  $('.list-group-item').on('click', '.like-btn', async function (e) {
     e.preventDefault()
-    console.log("THis event is happening", e.target.closest("a"))
     let response = await axios.post(`/likes/${e.target.closest("a").id}/update`)
 
     if (response.status === 200) {
