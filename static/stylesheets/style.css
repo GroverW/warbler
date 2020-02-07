@@ -269,7 +269,11 @@ a.follow-btn {
   height: 30px; 
   line-height: 16px;
   font-size: 13px;
+}
 
+a.follow-btn-lg, a.block-btn {
+  height: 35px;
+  font-size: 14px;
 }
 
 #messages {

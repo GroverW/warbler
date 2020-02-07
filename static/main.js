@@ -30,12 +30,17 @@ $(function () {
 
     let route = $link.hasClass('stop-blocking') ? 'unblock' : 'block';
     let blockText = $link.hasClass('stop-blocking') ? 'Block' : 'Unblock';
-    console.log(`/users/${route}/${e.target.id}`)
+
     let response = await axios.post(`/users/${route}/${e.target.id}`)
 
     if (response.status === 200) {
       $link.toggleClass('start-blocking stop-blocking btn-danger btn-outline-danger text-danger text-white')
       $link.text(blockText)
+
+      if(route === 'block' && $('.follow-btn-lg').first().text() === 'Unfollow') {
+        $('.follow-btn-lg').toggleClass('start-following stop-following btn-primary btn-outline-primary text-primary text-white')
+        $('.follow-btn-lg').text('Follow')
+      }
     }
   })
 });

@@ -52,17 +52,17 @@
             {% elif g.user %}
             
               {% if g.user.is_following(user) %}
-              <a id="{{ user.id }}" class="btn btn-primary btn-sm stop-following text-white">Unfollow</a>
+              <a id="{{ user.id }}" class="follow-btn-lg btn btn-primary btn-sm stop-following text-white">Unfollow</a>
               {% else %}
-              <a id="{{ user.id }}" class="btn btn-outline-primary start-following text-primary">Follow</a>
+              <a id="{{ user.id }}" class="follow-btn-lg btn btn-outline-primary start-following text-primary">Follow</a>
               {% endif %}
             
               &nbsp;
 
               {% if g.user.is_blocking(user) %}
-              <a id="{{ user.id }}" class="btn btn-danger btn-sm stop-blocking text-white">Unblock</a>
+              <a id="{{ user.id }}" class="block-btn btn btn-danger btn-sm stop-blocking text-white">Unblock</a>
               {% else %}
-              <a id="{{ user.id }}" class="btn btn-outline-danger start-blocking text-danger">Block</a>
+              <a id="{{ user.id }}" class="block-btn btn btn-outline-danger start-blocking text-danger">Block</a>
               {% endif %}
 
             {% endif %}

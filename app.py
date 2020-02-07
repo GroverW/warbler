@@ -206,7 +206,7 @@ def stop_following(follow_id):
         flash("Access unauthorized.", "danger")
         return redirect("/")
 
-    followed_user = User.query.get(follow_id)
+    followed_user = User.query.get_or_404(follow_id)
     g.user.following.remove(followed_user)
     db.session.commit()
 
@@ -234,6 +234,26 @@ def add_block(block_id):
 
     blocked_user = User.query.get_or_404(block_id)
     g.user.blocked_users.append(blocked_user)
+
+    if g.user.is_following(blocked_user):
+        g.user.following.remove(blocked_user)
+
+
+    db.session.commit()
+
+    return redirect(f"/users/{g.user.id}/blocked-users")
+
+
+@app.route('/users/unblock/<int:block_id>', methods=['POST'])
+def stop_blocking(block_id):
+    """Have currently-logged-in-user stop blocking this user."""
+
+    if not g.user:
+        flash("Access unauthorized.", "danger")
+        return redirect("/")
+
+    blocked_user = User.query.get_or_404(block_id)
+    g.user.blocked_users.remove(blocked_user)
     db.session.commit()
 
     return redirect(f"/users/{g.user.id}/blocked-users")
