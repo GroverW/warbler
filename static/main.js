@@ -1,23 +1,16 @@
 $(function () {
-  $('body').on('click', '.stop-following', async function (e) {
+  $('.card-contents').on('click', '.stop-following, .start-following', async function (e) {
     e.preventDefault()
+    $link = $(e.target)
 
-    let response = await axios.post(`/users/stop-following/${e.target.id}`)
+    let route = $link.hasClass('stop-following') ? 'stop-following' : 'follow';
+    let followText = $link.hasClass('stop-following') ? 'Follow' : 'Unfollow';
+    
+    let response = await axios.post(`/users/${route}/${e.target.id}`)
 
     if (response.status === 200) {
-      $(e.target).toggleClass('start-following stop-following btn-primary btn-outline-primary')
-      $(e.target).text('Follow')
-    }
-  })
-
-  $('body').on('click', '.start-following', async function (e) {
-    e.preventDefault()
-
-    let response = await axios.post(`/users/follow/${e.target.id}`)
-
-    if (response.status === 200) {
-      $(e.target).toggleClass('start-following stop-following btn-primary btn-outline-primary')
-      $(e.target).text('Unfollow')
+      $link.toggleClass('start-following stop-following btn-primary btn-outline-primary text-primary text-white')
+      $link.text(followText)
     }
   })
 

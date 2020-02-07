@@ -262,6 +262,13 @@ nav + .container {
   padding-top: 3px;
 }
 
+.follow-btn {
+  margin: 5px 5px 0 0;
+  width: 89px;
+  height: 30px;
+  line-height: 20px;
+}
+
 #messages {
   position: relative;
 }
@@ -275,7 +282,7 @@ nav + .container {
   z-index: 1;
 }
 
-#messages .list-group-item a:not(.message-link) {
+#messages .list-group-item a:not(.message-link):not(.like-btn) {
   position: relative;
   z-index: 2;
 }
@@ -290,17 +297,17 @@ nav + .container {
   background-color: #e6ecf0;
 }
 
-.like-btn {
-  position: absolute;
+#messages .like-btn {
+  position: absolute; 
+  z-index: 3;
   top: 5px;
   right: 5px;
-  z-index: 10;
-  background: none;
-  border: none;
+  cursor: pointer;
 }
 
 .likes i {
   color: red;
+  
 }
 
 #sidebar-username {

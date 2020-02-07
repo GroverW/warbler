@@ -18,9 +18,9 @@
               <p>@{{ follower.username }}</p>
             </a>
             {% if g.user.is_following(follower) %}
-            <a id="{{ follower.id }}" class="btn btn-primary btn-sm stop-following">Unfollow</a>
+            <a id="{{ follower.id }}" class="follow-btn btn btn-primary btn-sm stop-following text-white">Unfollow</a>
             {% else %}
-            <a id="{{ follower.id }}" class="btn btn-outline-primary start-following">Follow</a>
+            <a id="{{ follower.id }}" class="follow-btn btn btn-outline-primary start-following text-primary">Follow</a>
             {% endif %}
           </div>
           <p class="card-bio">{{ follower.bio }}</p>

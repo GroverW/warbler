@@ -15,11 +15,11 @@
           <div class="message-area">
             <a href="/users/{{ msg.user.id }}">@{{ msg.user.username }}</a>
             <span class="text-muted">{{ msg.timestamp.strftime('%d %B %Y') }}</span>
-            {% if msg.user.id != g.user.id %}
-            <a id="{{msg.id}}" class='like-btn likes'><i class="fas fa-heart"></i></a>
-            {% endif %}
             <p>{{ msg.text }}</p>
           </div>
+          {% if msg.user.id != g.user.id %}
+            <a id="{{msg.id}}" class='like-btn likes'><i class="fas fa-heart"></i></a>
+          {% endif %}
         </li>
         {% endfor %}
       </ul>
