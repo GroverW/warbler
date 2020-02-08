@@ -168,7 +168,9 @@ def users_show(user_id):
                 .order_by(Message.timestamp.desc())
                 .limit(100)
                 .all())
-    return render_template('users/show.html', user=user, messages=messages)
+    users_blocking = [block.user_blocking_id for block in Blocks.query.all() if block.user_being_blocked_id == g.user.id]
+    likes = [message for message in user.likes if message.user_id not in users_blocking]
+    return render_template('users/show.html', user=user, messages=messages, likes=likes)
 
 
 @app.route('/users/<int:user_id>/following')
@@ -180,7 +182,9 @@ def show_following(user_id):
         return redirect("/")
 
     user = User.query.get_or_404(user_id)
-    return render_template('users/following.html', user=user)
+    users_blocking = [block.user_blocking_id for block in Blocks.query.all() if block.user_being_blocked_id == g.user.id]
+    likes = [message for message in user.likes if message.user_id not in users_blocking]
+    return render_template('users/following.html', user=user, likes=likes)
 
 
 @app.route('/users/<int:user_id>/followers')
@@ -192,17 +196,19 @@ def users_followers(user_id):
         return redirect("/")
 
     user = User.query.get_or_404(user_id)
-    return render_template('users/blocked_users.html', user=user)
+    users_blocking = [block.user_blocking_id for block in Blocks.query.all() if block.user_being_blocked_id == g.user.id]
+    likes = [message for message in user.likes if message.user_id not in users_blocking]
+    return render_template('users/followers.html', user=user, likes=likes)
 
 
 @app.route('/users/follow/<int:follow_id>', methods=['POST'])
 def add_follow(follow_id):
     """Add a follow for the currently-logged-in user."""
-    if not g.user or g.user.id == follow_id:
+    followed_user = User.query.get_or_404(follow_id)
+    if not g.user or g.user.id == follow_id or followed_user.is_blocking(g.user):
         flash("Access unauthorized.", "danger")
         return redirect("/")
 
-    followed_user = User.query.get_or_404(follow_id)
     g.user.following.append(followed_user)
     db.session.commit()
 
@@ -233,7 +239,9 @@ def block_user(user_id):
         return redirect("/")
 
     user = User.query.get_or_404(user_id)
-    return render_template('users/blocked-users.html', user=user)
+    users_blocking = [block.user_blocking_id for block in Blocks.query.all() if block.user_being_blocked_id == g.user.id]
+    likes = [message for message in user.likes if message.user_id not in users_blocking]
+    return render_template('users/blocked-users.html', user=user, likes=likes)
 
 
 @app.route('/users/block/<int:block_id>', methods=['POST'])
@@ -248,6 +256,9 @@ def add_block(block_id):
 
     if g.user.is_following(blocked_user):
         g.user.following.remove(blocked_user)
+    
+    if blocked_user.is_following(g.user):
+        blocked_user.following.remove(g.user)
 
 
     db.session.commit()
@@ -349,6 +360,13 @@ def messages_show(message_id):
     """Show a message."""
 
     msg = Message.query.get(message_id)
+    user = User.query.get_or_404(msg.user_id)
+    
+    if (user.is_blocking(g.user)):
+        flash("Message can't be found", "danger")
+        return redirect("/")
+
+
     return render_template('messages/show.html', message=msg)
 
 
@@ -396,8 +414,11 @@ def users_likes(user_id):
         flash("Access unauthorized.", "danger")
         return redirect("/")
 
+    users_blocking = [block.user_blocking_id for block in Blocks.query.all() if block.user_being_blocked_id == g.user.id]
+    # likes = Message.query.filter(Message.user_id.notin_(users_blocking)).all()
     user = User.query.get_or_404(user_id)
-    return render_template('users/likes.html', user=user)
+    likes = [message for message in user.likes if message.user_id not in users_blocking]
+    return render_template('users/likes.html', user=user, likes=likes)
 
 
 ##############################################################################
