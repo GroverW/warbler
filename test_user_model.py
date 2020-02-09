@@ -81,4 +81,72 @@ class UserModelTestCase(TestCase):
 
         self.assertEqual(str(self.u1), f"<User #{self.u1.id}: testuser, test@test.com>" )
 
+    def test_user_is_followed_by(self):
+        """ Can we check if a user is being followed by another user correctly?"""
     
+        # Check before we have user 2 follow user 1: should be False
+        self.assertEqual(self.u2.is_following(self.u1), False)
+
+        # Have user 2 follow user 1 and check again: should be True
+        with self.client as c:
+            with c.session_transaction() as sess:
+                sess[CURR_USER_KEY] = self.u2.id
+            self.client.post(f"/users/follow/{self.u1.id}", follow_redirects=True)
+            
+            self.u1 = User.query.get(1)
+            self.u2 = User.query.get(2)
+            
+            self.assertEqual(self.u1.is_followed_by(self.u2), True)
+            
+    def test_user_is_following(self):
+        """ Can we check if a user is following another user correctly?"""
+
+        # Check before we have user 1 follow user 2: should be False
+        self.assertEqual(self.u1.is_following(self.u2), False)
+
+        # Have user 1 follow user 2 and check again: should be True
+        with self.client as c:
+            with c.session_transaction() as sess:
+                sess[CURR_USER_KEY] = self.u1.id
+            self.client.post(f"/users/follow/{self.u2.id}", follow_redirects=True)
+            
+            self.u1 = User.query.get(1)
+            self.u2 = User.query.get(2)
+            
+            self.assertEqual(self.u1.is_following(self.u2), True)
+        
+    def test_user_is_blocking(self):
+        """ Can we check is a user is blocking another user correctly? """
+
+        # Check before we have user 1 block user 2: should be False
+        self.assertEqual(self.u1.is_blocking(self.u2), False)
+
+        # Have user 1 block user 2 and check again: should be True
+        with self.client as c:
+            with c.session_transaction() as sess:
+                sess[CURR_USER_KEY] = self.u1.id
+            self.client.post(f"/users/block/{self.u2.id}", follow_redirects=True)
+            
+            self.u1 = User.query.get(1)
+            self.u2 = User.query.get(2)
+            
+            self.assertEqual(self.u1.is_blocking(self.u2), True)
+    
+    def test_user_authenticate(self):
+        """ Does the User class method 'authenticate' work? """
+
+        # When valid password and username is entered:
+        result = User.authenticate("testuser","HASHED_PASSWORD")
+        self.assertEqual(bool(result), True)
+
+        #When invalid username is entered:
+        result = User.authenticate("invalid_username","HASHED_PASSWORD")
+        self.assertEqual(bool(result), False)
+
+        #When invalid passowrd is entered:
+        result = User.authenticate("testuser","NOT_VALID_PASS")
+        self.assertEqual(bool(result), False)
+    
+    # def test_user_signup: Testing the User Class method was left our
+    # as we are using the signup method in our setup; if it did not work
+    # none of our other tests would be working.
