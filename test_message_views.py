@@ -62,7 +62,7 @@ class MessageModelTestCase(TestCase):
 
     
     def test_new_message(self):
-        """ Can a user make a new message """
+        """ Can a user make a new message? """
         with self.client as c:
             with c.session_transaction() as sess:
                 sess[CURR_USER_KEY] = self.u1.id
@@ -78,6 +78,7 @@ class MessageModelTestCase(TestCase):
 
 
     def test_new_blank_message(self):
+        """ Do we correctly prevent a user from posting a blank message? """
         with self.client as c:
             with c.session_transaction() as sess:
                 sess[CURR_USER_KEY] = self.u1.id
@@ -91,6 +92,7 @@ class MessageModelTestCase(TestCase):
     
 
     def test_delete_message(self):
+        """ Can a user delete their messages?"""
         with self.client as c:
             with c.session_transaction() as sess:
                 sess[CURR_USER_KEY] = self.u1.id
@@ -103,6 +105,7 @@ class MessageModelTestCase(TestCase):
 
 
     def test_delete_other_user_message(self):
+        """ Do we prevent a user from deleting another user's messages?"""
         with self.client as c:
             with c.session_transaction() as sess:
                 sess[CURR_USER_KEY] = self.u1.id
@@ -110,6 +113,46 @@ class MessageModelTestCase(TestCase):
             message2 = Message.query.filter(Message.text=="test message number two").first()
             
             resp = self.client.post(f"/messages/{message2.id}/delete", follow_redirects=True)
+            html = resp.get_data(as_text=True)
+            self.assertEqual(resp.status_code, 200)
+            self.assertIn("Access unauthorized", html)
+    
+    def test_message_like(self):
+        """ Can a user like a message? """
+        with self.client as c:
+            with c.session_transaction() as sess:
+                sess[CURR_USER_KEY] = self.u1.id
+
+            message2 = Message.query.filter(Message.text=="test message number two").first()
+
+            # User 1 initially should have no liked messages
+            resp = self.client.get(f"/users/{self.u1.id}/likes")
+            html = resp.get_data(as_text=True)
+            self.assertEqual(resp.status_code, 200)
+            html = resp.get_data(as_text=True)
+            self.assertNotIn("test message number two", html)
+            
+            # Have user 1 like one of user 2's messages
+            resp = self.client.post(f"/likes/{message2.id}/update", follow_redirects=True)
+            html = resp.get_data(as_text=True)
+            self.assertEqual(resp.status_code, 200)
+
+            # User 2's message should now appear in user 1's likes
+            resp = self.client.get(f"/users/{self.u1.id}/likes")
+            html = resp.get_data(as_text=True)
+            self.assertEqual(resp.status_code, 200)
+            html = resp.get_data(as_text=True)
+            self.assertIn("test message number two", html)
+    
+    def test_like_own_message(self):
+        """ Do we correctly prevent a user from liking their own messages? """
+        with self.client as c:
+            with c.session_transaction() as sess:
+                sess[CURR_USER_KEY] = self.u1.id
+
+            message1 = Message.query.filter(Message.text=="test message number one").first()
+
+            resp = self.client.post(f"/likes/{message1.id}/update", follow_redirects=True)
             html = resp.get_data(as_text=True)
             self.assertEqual(resp.status_code, 200)
             self.assertIn("Access unauthorized", html)

@@ -387,7 +387,8 @@ def messages_destroy(message_id):
 
 @app.route('/likes/<int:msg_id>/update', methods=["POST"])
 def likes_add(msg_id):
-    if not g.user:
+    message =  Message.query.get_or_404(msg_id)
+    if not g.user or g.user.id == message.user_id:
         flash("Access unauthorized.", "danger")
         return redirect("/")
 
