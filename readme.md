@@ -14,7 +14,7 @@ Features that have been implemented:
 ## Libraries
 - Bcrypt: used for encrypting passwords
 - WTForms: used for form validation
-- SQLAlchemy: am Object Relational Mapper
+- SQLAlchemy: an Object Relational Mapper
 
 ## Setup
 1) "python3 -m venv venv" at the root directory to create a virtual environment
